@@ -120,21 +120,36 @@ async def main():
                     Available tools:
                     {tools_description}
 
-                    You must respond with EXACTLY ONE line in one of these formats (no additional text):
+                    You MUST follow these sequential steps for every problem:
+                    1. FIRST use show_reasoning to explain your approach (MANDATORY before any calculation)
+                    2. THEN perform calculations using other tools
+                    3. THEN verify results with the verify tool when appropriate
+                    4. THEN use any visualization or output tools (like paint_the_number_in_rectangle)
+                    5. FINALLY provide the final answer
 
-                    1. For function calls:  
+
+                    1. For showing reasoning (MUST BE CALLED FIRST): 
+                    FUNCTION_CALL: {{"name": "show_reasoning", "params": {{"steps": ["step1", "step2", "step3"]}}}}
+
+                    2. For function calls:  
                     FUNCTION_CALL: {{"name": "function_name", "params": {{"param1": value1, "param2": value2}}}}
 
-                    2. For final answers:  
+                    3. For Calculations:
+                    FUNCTION_CALL: {{"name": "calculate", "params": {{"expression": "2 + 2"}}}}
+
+                    4. For Verifications:
+                    FUNCTION_CALL: {{"name": "verify", "params": {{"expression": "2 + 2", "expected": 4}}}}
+
+                    5. For final answers:  
                     FINAL_ANSWER: {{"result": number}}
 
                     INSTRUCTIONS:
                     1. For each problem, follow these steps:
-                    - Analyze the problem and identify the type of mathematical reasoning needed
-                    - Break down the solution into clear, logical steps
-                    - Verify each step before proceeding
-                    - Use tools only when necessary and process all returned values
-                    - Double-check your final answer
+                    - FIRST: use show_reasoning to explain your approach (MANDATORY before any calculation)
+                    - SECOND: Break down the solution into clear, logical steps
+                    - THIRD: Verify each step before proceeding
+                    - FOURTH: Use tools only when necessary and process all returned values
+                    - FIFTH: Double-check your final answer
 
                     2. Response Format:
                     You must respond with EXACTLY ONE line in one of these formats:
@@ -156,7 +171,19 @@ async def main():
                     - Maintain context of previous calculations
                     - Update your approach based on new information
 
+                    Error Handling Examples:
+                    - FUNCTION_CALL: {{"name": "show_reasoning", "params": {{"steps": ["[UNCERTAIN] Attempting calculation", "Will retry if fails"]}}}}
+                    - FUNCTION_CALL: {{"name": "calculate", "params": {{"expression": "invalid"}}}}
+                    - FUNCTION_CALL: {{"name": "calculate", "params": {{"expression": "invalid"}}}}  
+
+                    Verification Examples:
+                    - FUNCTION_CALL: {{"name": "show_reasoning", "params": {{"steps": ["Checking unit consistency", "Verifying sign", "Validating range"]}}}}
+                    - FUNCTION_CALL: {{"name": "verify", "params": {{"expression": "result > 0", "expected": true}}}}                  
+
                     Examples:
+                    - FUNCTION_CALL: {{"name": "show_reasoning", "params": {{"steps": ["step1", "step2", "step3"]}}}}
+                    - FUNCTION_CALL: {{"name": "calculate", "params": {{"expression": "2 + 2"}}}}
+                    - FUNCTION_CALL: {{"name": "verify", "params": {{"expression": "2 + 2", "expected": 4}}}}
                     - FUNCTION_CALL: {{"name": "add", "params": {{"a": 5, "b": 3}}}}
                     - FUNCTION_CALL: {{"name": "strings_to_chars_to_int", "params": {{"input": "INDIA"}}}}
                     - FUNCTION_CALL: {{"name": "paint_the_number_in_rectangle", "params": {{"text": "INDIA", "x": 780, "y": 380, "width": 1140, "height": 700}}}}
@@ -265,10 +292,19 @@ async def main():
                                         if isinstance(value, str):
                                             # If value is a string, split and convert
                                             value = value.strip('[]').split(',')
-                                            arguments[param_name] = [int(x.strip()) for x in value]
+                                            if func_name == 'show_reasoning':
+                                                # For show_reasoning, keep strings as is
+                                                arguments[param_name] = [x.strip() for x in value]
+                                            else:
+                                                # For other tools, convert to integers
+                                                arguments[param_name] = [int(x.strip()) for x in value]
                                         elif isinstance(value, list):
-                                            # If value is already a list, ensure elements are integers
-                                            arguments[param_name] = [int(x) if isinstance(x, (int, float, str)) else x for x in value]
+                                            if func_name == 'show_reasoning':
+                                                # For show_reasoning, keep strings as is
+                                                arguments[param_name] = value
+                                            else:
+                                                # For other tools, ensure elements are integers
+                                                arguments[param_name] = [int(x) if isinstance(x, (int, float, str)) else x for x in value]
                                         else:
                                             arguments[param_name] = [value]
                                     else:
