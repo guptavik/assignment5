@@ -43,7 +43,7 @@ Examples:
 - FUNCTION_CALL: {"function": "add", "params": {"num1": 5, "num2": 3}}
 - FUNCTION_CALL: {"function": "strings_to_chars_to_int", "params": {"input": "INDIA"}}
 - FUNCTION_CALL: {"function": "paint_the_number_in_rectangle", "params": {"text": "INDIA", "x": 780, "y": 380, "width": 1140, "height": 700}}
-- FUNCTION_CALL: {"function": "send_email", "params": {"to": "vikas.gupta@pillir.io", "subject": "Hello", "body": "Hello from the other side"}}
+- FUNCTION_CALL: {"function": "send_email", "params": {"to": "xxx@google.com", "subject": "Hello", "body": "Hello from the other side"}}
 - FINAL_ANSWER: {"result": 42}
 
 
