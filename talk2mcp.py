@@ -157,11 +157,11 @@ async def main():
                     - Update your approach based on new information
 
                     Examples:
-                    - FUNCTION_CALL: {"name": "add", "params": {"num1": 5, "num2": 3}}
-                    - FUNCTION_CALL: {"name": "strings_to_chars_to_int", "params": {"input": "INDIA"}}
-                    - FUNCTION_CALL: {"name": "paint_the_number_in_rectangle", "params": {"text": "INDIA", "x": 780, "y": 380, "width": 1140, "height": 700}}
-                    - FUNCTION_CALL: {"name": "send_email", "params": {"to": "xxx@google.com", "subject": "Hello", "body": "Hello from the other side"}}
-                    - FINAL_ANSWER:  {"result": 42}      
+                    - FUNCTION_CALL: {{"name": "add", "params": {{"a": 5, "b": 3}}}}
+                    - FUNCTION_CALL: {{"name": "strings_to_chars_to_int", "params": {{"input": "INDIA"}}}}
+                    - FUNCTION_CALL: {{"name": "paint_the_number_in_rectangle", "params": {{"text": "INDIA", "x": 780, "y": 380, "width": 1140, "height": 700}}}}
+                    - FUNCTION_CALL: {{"name": "send_email", "params": {{"to": "vikas.gupta@pillir.io", "subject": "Hello", "body": "Hello from the other side"}}}}
+                    - FINAL_ANSWER: {{"result": 42}}      
 
 
                     Important Rules:
@@ -249,7 +249,8 @@ async def main():
                                     if not params:  # Check if we have enough parameters
                                         raise ValueError(f"Not enough parameters provided for {func_name}")
                                         
-                                    value = params.pop(0)  # Get and remove the first parameter
+                                    # value = params.pop(0)  # Get and remove the first parameter
+                                    value = params[param_name]
                                     param_type = param_info.get('type', 'string')
                                     
                                     print(f"DEBUG: Converting parameter {param_name} with value {value} to type {param_type}")
@@ -262,8 +263,14 @@ async def main():
                                     elif param_type == 'array':
                                         # Handle array input
                                         if isinstance(value, str):
+                                            # If value is a string, split and convert
                                             value = value.strip('[]').split(',')
-                                        arguments[param_name] = [int(x.strip()) for x in value]
+                                            arguments[param_name] = [int(x.strip()) for x in value]
+                                        elif isinstance(value, list):
+                                            # If value is already a list, ensure elements are integers
+                                            arguments[param_name] = [int(x) if isinstance(x, (int, float, str)) else x for x in value]
+                                        else:
+                                            arguments[param_name] = [value]
                                     else:
                                         arguments[param_name] = str(value)
 
